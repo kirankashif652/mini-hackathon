@@ -1,13 +1,9 @@
-// DOM elements
-const addTaskBtn = document.getElementById('addTaskBtn');
-const taskModal = document.getElementById('taskModal');
-const closeBtn = document.querySelector('.close');
-const taskForm = document.getElementById('taskForm');
-const modalTitle = document.getElementById('modalTitle');
+// // DOM elements
 const profileModal = document.getElementById('profileModal');
 const closeProfileModal = document.getElementById('closeProfileModal');
 const logoutButtonInModal = document.getElementById('logoutButtonInModal');
-const profileIcon = document.getElementById('profileIcon'); // Make sure you have id="profileIcon" in HTML
+const profileIcon = document.getElementById('profileIcon');
+const deleteTaskBtn = document.getElementById('deleteTaskBtn'); // Added missing deleteTaskBtn element
 
 // Check login status
 const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
@@ -19,27 +15,24 @@ let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 renderTasks();
 
 // Event listeners
-addTaskBtn.addEventListener('click', openAddTaskModal);
-closeBtn.addEventListener('click', closeModal);
-taskForm.addEventListener('submit', saveTask);
+addTaskBtn?.addEventListener('click', openAddTaskModal);
+closeBtn?.addEventListener('click', closeModal);
+taskForm?.addEventListener('submit', saveTask);
 window.addEventListener('click', (e) => {
   if (e.target === taskModal) closeModal();
 });
 
-if (profileIcon) {
-  profileIcon.addEventListener('click', () => {
-    profileModal.classList.remove('hidden');
-  });
-}
-
-closeProfileModal.onclick = function () {
-  profileModal.style.display = 'none';
-}
-
-logoutButtonInModal.addEventListener('click', function () {
-  logoutUser();
+profileIcon?.addEventListener('click', () => {
+  profileModal.classList.remove('hidden');
 });
 
+closeProfileModal?.addEventListener('click', () => {
+  profileModal.classList.add('hidden');
+});
+
+logoutButtonInModal?.addEventListener('click', logoutUser);
+
+// If not logged in, disable Add Task button
 if (!isLoggedIn) {
   addTaskBtn.disabled = true;
   addTaskBtn.style.opacity = 0.5;
@@ -54,12 +47,11 @@ function openAddTaskModal() {
     alert('Please login to add a task!');
     return;
   }
-
   modalTitle.textContent = 'Add New Task';
   taskForm.reset();
   document.getElementById('taskId').value = '';
   document.getElementById('taskStatus').value = 'todo';
-  document.getElementById('deleteTaskBtn').style.display = 'none';  // Hide delete button when adding new task
+  deleteTaskBtn.style.display = 'none';
   taskModal.style.display = 'block';
 }
 
@@ -74,7 +66,7 @@ function openEditTaskModal(taskId) {
   document.getElementById('assignedTo').value = task.assignedTo;
   document.getElementById('taskStatus').value = task.status;
 
-  document.getElementById('deleteTaskBtn').style.display = 'inline-block';  // Show delete button when editing task
+  deleteTaskBtn.style.display = 'inline-block';
   taskModal.style.display = 'block';
 }
 
@@ -86,22 +78,21 @@ function saveTask(e) {
   e.preventDefault();
 
   const taskId = document.getElementById('taskId').value;
-  const title = document.getElementById('title').value;
-  const description = document.getElementById('description').value;
-  const assignedTo = document.getElementById('assignedTo').value;
+  const title = document.getElementById('title').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const assignedTo = document.getElementById('assignedTo').value.trim();
   const status = document.getElementById('taskStatus').value;
+
+  if (!title) {
+    alert("Title is required");
+    return;
+  }
 
   if (taskId) {
     // Edit existing task
     const taskIndex = tasks.findIndex(t => t.id === taskId);
     if (taskIndex !== -1) {
-      tasks[taskIndex] = {
-        ...tasks[taskIndex],
-        title,
-        description,
-        assignedTo,
-        status
-      };
+      tasks[taskIndex] = { ...tasks[taskIndex], title, description, assignedTo, status };
     }
   } else {
     // Add new task
@@ -118,7 +109,6 @@ function saveTask(e) {
   // Save to localStorage
   localStorage.setItem('tasks', JSON.stringify(tasks));
 
-  // Update the UI
   renderTasks();
   closeModal();
 }
@@ -142,6 +132,8 @@ function renderTasks() {
     const column = document.querySelector(`#${task.status} .task-list`);
     if (column) column.appendChild(taskElement);
   });
+
+  setupDragAndDrop();
 }
 
 function createTaskElement(task) {
@@ -149,13 +141,12 @@ function createTaskElement(task) {
   taskElement.className = 'task';
   taskElement.id = `task-${task.id}`;
   taskElement.draggable = true;
-  taskElement.addEventListener('dragstart', (e) => drag(e, task.id));
 
   taskElement.innerHTML = `
     <div class="task-title">${task.title}</div>
     <div class="task-description">${task.description}</div>
     <div class="task-meta">
-      <div class="task-assigned"><i class="fas fa-user"></i>${task.assignedTo || 'Unassigned'}</div>
+      <div class="task-assigned"><i class="fas fa-user"></i> ${task.assignedTo || 'Unassigned'}</div>
       <div class="task-actions">
         <button class="action-btn" onclick="openEditTaskModal('${task.id}')"><i class="fas fa-edit"></i></button>
         <button class="action-btn" onclick="deleteTask('${task.id}')"><i class="fas fa-trash"></i></button>
@@ -173,12 +164,12 @@ function getMoveButtons(task) {
   let buttons = '';
 
   if (task.status === 'todo') {
-    buttons += `<button class="move-btn move-to-inprogress" onclick="moveTask('${task.id}', 'inprogress')"><i class="fas fa-arrow-right"></i> Move to Progress</button>`;
+    buttons += `<button class="move-btn" onclick="moveTask('${task.id}', 'inprogress')">Move to In Progress</button>`;
   } else if (task.status === 'inprogress') {
-    buttons += `<button class="move-btn move-to-todo" onclick="moveTask('${task.id}', 'todo')"><i class="fas fa-arrow-left"></i> Move to To Do</button>`;
-    buttons += `<button class="move-btn move-to-done" onclick="moveTask('${task.id}', 'done')"><i class="fas fa-arrow-right"></i> Move to Done</button>`;
+    buttons += `<button class="move-btn" onclick="moveTask('${task.id}', 'todo')">Move to To Do</button>`;
+    buttons += `<button class="move-btn" onclick="moveTask('${task.id}', 'done')">Move to Done</button>`;
   } else if (task.status === 'done') {
-    buttons += `<button class="move-btn move-to-inprogress" onclick="moveTask('${task.id}', 'inprogress')"><i class="fas fa-arrow-left"></i> Move to Progress</button>`;
+    buttons += `<button class="move-btn" onclick="moveTask('${task.id}', 'inprogress')">Move to In Progress</button>`;
   }
 
   return buttons;
@@ -193,26 +184,32 @@ function moveTask(taskId, newStatus) {
   }
 }
 
-function drag(e, taskId) {
-  e.dataTransfer.setData('taskId', taskId);
-  e.target.classList.add('dragging');
-}
+function setupDragAndDrop() {
+  document.querySelectorAll('.task').forEach(task => {
+    task.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', task.id.replace('task-', ''));
+      task.classList.add('dragging');
+    });
+  });
 
-function allowDrop(e) {
-  e.preventDefault();
-  const column = e.target.closest('.column');
-  if (column) {
-    column.classList.add('drag-over');
-  }
-}
+  document.querySelectorAll('.column').forEach(column => {
+    column.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      column.classList.add('drag-over');
+    });
 
-function drop(e, status) {
-  e.preventDefault();
-  const taskId = e.dataTransfer.getData('taskId');
-  moveTask(taskId, status);
+    column.addEventListener('dragleave', () => {
+      column.classList.remove('drag-over');
+    });
 
-  document.querySelectorAll('.column').forEach(col => col.classList.remove('drag-over'));
-  document.querySelectorAll('.task').forEach(task => task.classList.remove('dragging'));
+    column.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const taskId = e.dataTransfer.getData('text/plain');
+      const newStatus = column.getAttribute('id');
+      moveTask(taskId, newStatus);
+      column.classList.remove('drag-over');
+    });
+  });
 }
 
 function logoutUser() {

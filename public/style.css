@@ -513,6 +513,64 @@
   color: #555;
 }
 
+/* Card Styling */
+.card {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 30px 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading */
+.card h3 {
+  text-align: center;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Label Styling */
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #555;
+}
+
+/* Input Styling */
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+}
+
+/* Button Styling */
+.btn-custom {
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background 0.3s;
+}
+
+.btn-custom:hover {
+  background: #0056b3;
+}
+
+
 /* Logout Button */
 .logout-btn {
   background-color: #f44336;
@@ -560,3 +618,4 @@
     font-size: 0.9em;
   }
 }
+

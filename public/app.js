@@ -161,63 +161,108 @@ import {
     }
   });
   
-  
-  ///////////////// update profile Image
-  
-//   const oldImage = document.getElementById("profImg");
-  
-//   const uploadImg = async ()=>{
-//     const file = document.getElementById("image");
-//     const selectedImg = file.files[0];
-  
-//     const formData = new FormData()
-//     formData.append("file", selectedImg)
-//     formData.append("upload_preset", "firebaseXcloudinary")
-//     formData.append("cloud_name", "duo0iqvpr")
-  
-  
-//     try {
-//        const response =  await fetch(`https://api.cloudinary.com/v1_1/duo0iqvpr/image/upload`,{
-//             method:"POST",
-//             body:formData
-//         })
-  
-  
-//            const data = await response.json()
-//            const url=  data.secure_url
-  
-//            /////////////////////// add image in firebase
-  
-//            const userRef = doc(db, "users", auth.currentUser.uid);
-  
-//            await updateDoc(userRef, {
-//              proFileImg:url
-//            });
-//            oldImage.src = url
-  
-  
-//     } catch (error) {
-//         console.log(error);
-        
-//     }
-  
-//   }
-  
-//   document.querySelector("#uploadBtn").addEventListener("click", uploadImg)
 
 
-
-
-// Task Modal
+// DOM elements
 const addTaskBtn = document.getElementById('addTaskBtn');
 const taskModal = document.getElementById('taskModal');
-const closeTaskModalBtn = document.querySelector('#taskModal .close');
+const closeBtn = document.querySelector('#taskModal .close');
+const taskForm = document.getElementById('taskForm');
+const modalTitle = document.getElementById('modalTitle');
 
-// Profile Modal
-const profileIcon = document.getElementById('profileIcon');
-const profileModal = document.getElementById('profileModal');
-const closeProfileModalBtn = document.getElementById('closeProfileModal');
-const profileEmail = document.getElementById('profileEmail');
+// Task list array
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+// Show Task Modal for adding new task
+addTaskBtn?.addEventListener('click', () => {
+  taskModal.style.display = 'block';
+  modalTitle.innerText = 'Add New Task';
+  taskForm.reset();
+  document.getElementById('taskId').value = "";
+  document.getElementById('taskStatus').value = "todo";
+});
+
+// Close modal on clicking close button
+closeBtn?.addEventListener('click', () => {
+  taskModal.style.display = 'none';
+});
+
+// Close modal on outside click
+window.addEventListener('click', (e) => {
+  if (e.target == taskModal) {
+    taskModal.style.display = 'none';
+  }
+});
+
+// Save task on form submit
+taskForm?.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  const taskId = document.getElementById('taskId').value;
+  const title = document.getElementById('title').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const assignedTo = document.getElementById('assignedTo').value.trim();
+  const status = document.getElementById('taskStatus').value || 'todo';
+
+  if (!title) {
+    alert('Please enter a task title.');
+    return;
+  }
+
+  if (taskId) {
+    // Edit existing task
+    const index = tasks.findIndex(task => task.id === taskId);
+    if (index !== -1) {
+      tasks[index] = { ...tasks[index], title, description, assignedTo, status };
+    }
+  } else {
+    // Add new task
+    const newTask = {
+      id: Date.now().toString(),
+      title,
+      description,
+      assignedTo,
+      status,
+    };
+    tasks.push(newTask);
+  }
+
+  // Save tasks
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+
+  // Clear form and hide modal
+  taskForm.reset();
+  taskModal.style.display = 'none';
+
+  // Optionally you can call renderTasks(); here to update the task list UI
+  renderTasks();
+});
+
+// Render tasks (you can customize this as needed)
+function renderTasks() {
+  const taskListContainer = document.getElementById('taskList'); // assume you have a div with id=taskList
+  if (!taskListContainer) return;
+
+  taskListContainer.innerHTML = '';
+
+  tasks.forEach(task => {
+    const taskDiv = document.createElement('div');
+    taskDiv.classList.add('task-item');
+    taskDiv.innerHTML = `
+      <h4>${task.title}</h4>
+      <p>${task.description}</p>
+      <p><strong>Assigned To:</strong> ${task.assignedTo || 'N/A'}</p>
+      <small>Status: ${task.status}</small>
+    `;
+    taskListContainer.appendChild(taskDiv);
+  });
+}
+
+// Initial render
+renderTasks();
+
+
+
 
 // User is logged in state
 let userLoggedIn = false;
@@ -261,20 +306,48 @@ window.addEventListener('click', function (event) {
   }
 });
 
+
+// DOM Elements
+const profileIcon = document.getElementById('profileIcon');
+const profileModal = document.getElementById('profileModal');
+const closeProfileModal = document.getElementById('closeProfileModal');
+
+// Show Profile Modal when profile icon is clicked
+profileIcon?.addEventListener('click', () => {
+  profileModal.classList.remove('hidden');  // Show modal
+});
+
+// Close Profile Modal when close button is clicked
+closeProfileModal?.addEventListener('click', () => {
+  profileModal.classList.add('hidden');  // Hide modal
+});
+
 // Profile Icon Click
 profileIcon?.addEventListener('click', function () {
   if (userLoggedIn) {
+    // Show profile modal
+    profileModal.classList.remove('hidden');
     profileModal.style.display = 'block';
   } else {
     alert('Please log in first!');
-    window.location.href = './login.html';
+    window.location.href = './login.html'; // Redirect to login if not logged in
   }
 });
 
 // Close Profile Modal
 closeProfileModalBtn?.addEventListener('click', function () {
+  profileModal.classList.add('hidden');
   profileModal.style.display = 'none';
 });
+
+// Ensure modal closes if clicked outside
+window.addEventListener('click', function (e) {
+  if (e.target === profileModal) {
+    profileModal.classList.add('hidden');
+    profileModal.style.display = 'none';
+  }
+});
+
 
 // Logout from modal
 const logoutButtonInModal = document.getElementById('logoutButtonInModal');
@@ -287,7 +360,20 @@ logoutButtonInModal?.addEventListener('click', function () {
   });
 });
 
-// Your task form and task saving code goes here...
+
+
+
+// Add Task Example:
+const addTaskToFirebase = async (task) => {
+  try {
+    const docRef = await addDoc(collection(db, 'tasks'), task);
+    console.log("Document written with ID: ", docRef.id);
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+};
+
+
 
   
   // -------------------- EVENT LISTENERS --------------------
@@ -296,3 +382,4 @@ logoutButtonInModal?.addEventListener('click', function () {
   document.getElementById("logoutBtn")?.addEventListener("click", logout);
   document.getElementById("googleLoginBtn")?.addEventListener("click", googleSignIn);
   document.getElementById("updatePasswordBtn")?.addEventListener("click", updatePasswordFunction);
+  document.getElementById("forgotPasswordLink")?.addEventListener("click", forgotPassword)
