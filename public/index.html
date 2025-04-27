@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Task Tracker</title>
+
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+
+<div class="app-container">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">
+        <i class="fas fa-tasks"></i>
+      </div>
+      <div class="logo-text">Task Tracker</div>
+    </div>
+
+    <div class="menu-item active">
+      <i class="fas fa-home"></i>
+      <span class="menu-label">Dashboard</span>
+    </div>
+
+    <div class="menu-item">
+      <i class="fas fa-calendar-alt"></i>
+      <span class="menu-label">Calendar</span>
+    </div>
+
+    <div class="menu-item">
+      <i class="fas fa-clipboard-list"></i>
+      <span class="menu-label">Tasks</span>
+    </div>
+
+    <a href="./signup.html" class="menu-item"  style="text-decoration: none; color: white;">
+      <i class="fas fa-user-plus"></i>
+      <span class="menu-label">Sign Up</span>
+    </a>
+
+    <a href="./login.html" class="menu-item" style="text-decoration: none; color:white ;">
+      <i class="fas fa-sign-in-alt"></i>
+      <span class="menu-label">Login</span>
+    </a>
+
+    <button id="addTaskBtn" class="add-btn">
+      <i class="fas fa-plus"></i> Add Task
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+
+    <!-- Header -->
+    <div class="header">
+      <h1>Task Board</h1>
+      <div class="toolbar">
+        <button class="tool-btn"><i class="fas fa-search"></i></button>
+        <button class="tool-btn"><i class="fas fa-filter"></i></button>
+        <button id="profileIcon" class="tool-btn"><i class="fas fa-user-circle"></i></button>
+      </div>
+    </div>
+
+    <!-- Board -->
+    <div class="board">
+      <div class="column" id="todo" ondragover="allowDrop(event)" ondrop="drop(event, 'todo')">
+        <div class="column-header"><i class="fas fa-clipboard-list"></i> To Do</div>
+        <div class="task-list"></div>
+      </div>
+
+      <div class="column" id="inprogress" ondragover="allowDrop(event)" ondrop="drop(event, 'inprogress')">
+        <div class="column-header"><i class="fas fa-spinner"></i> In Progress</div>
+        <div class="task-list"></div>
+      </div>
+
+      <div class="column" id="done" ondragover="allowDrop(event)" ondrop="drop(event, 'done')">
+        <div class="column-header"><i class="fas fa-check-circle"></i> Done</div>
+        <div class="task-list"></div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Task Modal -->
+<div id="taskModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add New Task</div>
+      <span class="close">&times;</span>
+    </div>
+
+    <form id="taskForm">
+      <input type="hidden" id="taskId">
+      <input type="hidden" id="taskStatus" value="todo">
+
+      <div class="form-group">
+        <label for="title">Task Title</label>
+        <input type="text" id="title" placeholder="Enter task title" required>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" placeholder="Enter task description"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="assignedTo">Assigned To</label>
+        <input type="text" id="assignedTo" placeholder="Enter assignee name">
+      </div>
+
+      <button type="submit" class="submit-btn">Save Task</button>
+    </form>
+  </div>
+</div>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Profile</div>
+      <span id="closeProfileModal" class="close">&times;</span>
+    </div>
+
+    <div class="profile-details">
+      <p><strong>Email:</strong> <span id="profileEmail">Loading...</span></p>
+    </div>
+
+    <button id="logoutButtonInModal" class="logout-btn">Logout</button>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="./index.js"></script>
+<script type="module" src="./app.js"></script>
+
+</body>
+</html>
